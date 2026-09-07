@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  verify:
+    name: Build and test
     runs-on: ubuntu-latest
 
     steps:
