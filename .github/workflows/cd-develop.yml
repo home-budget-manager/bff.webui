@@ -26,9 +26,9 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION=$(grep -E '^version:' .github/workflows/version.yml | cut -d':' -f2- | xargs)
+          VERSION=$(grep -E '^version:' .github/workflows/version | cut -d':' -f2- | xargs)
           if [ -z "$VERSION" ]; then
-            echo "version is empty in .github/workflows/version.yml"
+            echo "version is empty in .github/workflows/version"
             exit 1
           fi
           echo "value=$VERSION" >> "$GITHUB_OUTPUT"
@@ -44,7 +44,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./dockerfile
+          file: ./Dockerfile
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:${{ steps.version.outputs.tag }}
