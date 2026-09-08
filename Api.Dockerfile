@@ -21,4 +21,4 @@ EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "WebApi.dll"]
+ENTRYPOINT ["dotnet", "HomeBudgetManager.Bff.WebUI.WebApi.dll"]

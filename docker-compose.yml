@@ -1,0 +1,8 @@
+services:
+  api:
+    image: home-budget-manager/bff.webui:local
+    build:
+      context: .
+      dockerfile: Api.Dockerfile
+    ports:
+      - "4001:8080"
