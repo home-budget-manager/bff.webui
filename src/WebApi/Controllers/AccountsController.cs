@@ -18,9 +18,9 @@ public class AccountsController : ControllerBase
     {
         var result = new AccountData[]
         {
-            new AccountData("1", "Checking Account", AccountType.Checking, 1000.00m, 50.00m, "USD", true),
-            new AccountData("2", "Savings Account", AccountType.Savings, 5000.00m, 100.00m, "USD", true),
-            new AccountData("3", "Credit Card", AccountType.CreditCard, -200.00m, -20.00m, "USD", false),
+            new("1", "Checking Account", AccountType.Checking, 1000.00m, 50.00m, "USD", true),
+            new("2", "Savings Account", AccountType.Savings, 5000.00m, 100.00m, "USD", true),
+            new("3", "Credit Card", AccountType.CreditCard, -200.00m, -20.00m, "USD", false),
         };
 
         return this.Ok(result);
@@ -43,13 +43,14 @@ public class AccountsController : ControllerBase
     [HttpGet("{accountId}/operationsSummary")]
     public IActionResult GetAccountOperationsSummary(string accountId)
     {
-        var result = new OperationsSummary(new[]
-            {
-                new SummaryItem(SummaryItemType.Incomes, 4, 5050M, "USD"),
-                new SummaryItem(SummaryItemType.Expenses, 3, -1640.91M, "USD"),
-                new SummaryItem(SummaryItemType.TransfersIncoming, 1, 28.5M, "USD"),
-                new SummaryItem(SummaryItemType.TransfersOutgoing, 1, -1028.5M, "USD")
-            });
+        var result = new OperationsSummary(
+            "USD",
+            [
+                new SummaryItem(SummaryItemType.Incomes, 4, 5050M),
+                new SummaryItem(SummaryItemType.Expenses, 3, -1640.91M),
+                new SummaryItem(SummaryItemType.TransfersIncoming, 1, 28.5M),
+                new SummaryItem(SummaryItemType.TransfersOutgoing, 1, -1028.5M)
+            ]);
         return this.Ok(result);
     }
 
@@ -83,7 +84,7 @@ public class AccountsController : ControllerBase
         var result = new AccountBalanceHistory(
             accountId,
             "USD",
-            entries.ToArray());
+            [.. entries]);
         return this.Ok(result);
     }
 }

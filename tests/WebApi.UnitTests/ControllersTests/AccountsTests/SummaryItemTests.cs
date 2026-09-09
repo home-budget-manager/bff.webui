@@ -10,8 +10,6 @@ public class SummaryItemTests
 
     private decimal amount;
 
-    private string currency = string.Empty;
-
     private SummaryItem instance = null!;
 
     [Fact]
@@ -20,7 +18,6 @@ public class SummaryItemTests
         this.Given(t => t.ItemTypeIs(SummaryItemType.Incomes))
             .And(t => t.CountIs(5))
             .And(t => t.AmountIs(100.50m))
-            .And(t => t.CurrencyIs("USD"))
             .When(t => t.InstanceIsCreated())
             .Then(t => t.PropertiesAreSetCorrectly())
             .BDDfy();
@@ -32,15 +29,12 @@ public class SummaryItemTests
 
     private void AmountIs(decimal value) => this.amount = value;
 
-    private void CurrencyIs(string value) => this.currency = value;
-
     private void InstanceIsCreated()
     {
         this.instance = new SummaryItem(
             this.itemType,
             this.count,
-            this.amount,
-            this.currency);
+            this.amount);
     }
 
     private void PropertiesAreSetCorrectly()
@@ -48,6 +42,5 @@ public class SummaryItemTests
         this.instance.ItemType.ShouldBe(this.itemType);
         this.instance.Count.ShouldBe(this.count);
         this.instance.Amount.ShouldBe(this.amount);
-        this.instance.Currency.ShouldBe(this.currency);
     }
 }

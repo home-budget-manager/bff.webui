@@ -5,13 +5,11 @@ public class SummaryItem
     public SummaryItem(
         SummaryItemType itemType,
         int count,
-        decimal amount,
-        string currency)
+        decimal amount)
     {
         this.ItemType = itemType;
         this.Count = count;
         this.Amount = amount;
-        this.Currency = currency;
     }
 
     public SummaryItemType ItemType { get; }
@@ -19,6 +17,4 @@ public class SummaryItem
     public int Count { get; }
 
     public decimal Amount { get; }
-
-    public string Currency { get; }
 }
