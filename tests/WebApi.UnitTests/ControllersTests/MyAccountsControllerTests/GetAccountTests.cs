@@ -1,6 +1,6 @@
-﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.UnitTests.ControllersTests.AccountsControllerTests;
+﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.UnitTests.ControllersTests.MyAccountsControllerTests;
 
-using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.Accounts;
+using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
 using Microsoft.AspNetCore.Mvc;
 

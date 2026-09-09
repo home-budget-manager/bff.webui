@@ -2,14 +2,14 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.Accounts;
+using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
 using System.Collections.ObjectModel;
 using System.Security.Cryptography;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AccountsController : ControllerBase
+public class MyAccountsController : ControllerBase
 {
     private readonly RandomNumberGenerator randomNumberGenerator = RandomNumberGenerator.Create();
 

@@ -1,6 +1,6 @@
-﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.UnitTests.ControllersTests.AccountsTests;
+﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.UnitTests.ControllersTests.MyAccountsTests;
 
-using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.Accounts;
+using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
 public class SummaryItemTests
 {

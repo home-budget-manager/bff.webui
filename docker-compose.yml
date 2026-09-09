@@ -1,5 +1,7 @@
+name: home-budget-manager-bff.webui-local
+
 services:
-  api:
+  bff-webui:
     image: home-budget-manager/bff.webui:local
     build:
       context: .

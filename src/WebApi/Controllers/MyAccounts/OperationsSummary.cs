@@ -1,4 +1,4 @@
-﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.Controllers.Accounts;
+﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
 public class OperationsSummary
 {
