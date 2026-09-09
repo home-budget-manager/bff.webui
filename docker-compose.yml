@@ -4,5 +4,6 @@ services:
     build:
       context: .
       dockerfile: Api.Dockerfile
+    restart: always
     ports:
-      - "4001:8080"
+      - "5001:8080"
