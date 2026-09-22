@@ -34,6 +34,7 @@ public class OperationsSummaryTests
 
     private void PropertiesAreSetCorrectly()
     {
+        this.instance.Currency.ShouldBe(this.currency);
         this.instance.Items.ShouldBeEquivalentTo(this.items.ToArray());
     }
 }
