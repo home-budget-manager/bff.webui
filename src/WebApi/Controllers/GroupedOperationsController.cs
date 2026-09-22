@@ -6,7 +6,7 @@ using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.GroupedOperations;
 
 [Route("api/[controller]")]
 [ApiController]
-public class GroupedOperationsController
+public class GroupedOperationsController : ControllerBase
 {
     [HttpGet("account/{accountId}/groupType/{groupType}")]
     public IActionResult GetOperationsGrouping(
