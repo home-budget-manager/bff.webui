@@ -1,0 +1,11 @@
+name: home-budget-manager-bff.webui-local
+
+services:
+  bff-webui:
+    image: home-budget-manager/bff.webui:dev
+    build:
+      context: .
+      dockerfile: Api.Dockerfile
+    restart: always
+    ports:
+      - "5001:8080"
