@@ -1,1 +1,1 @@
-docker build -f Api.Dockerfile -t home-budget-manager/bff.webui:dev .
+docker build -f Api.Dockerfile -t home-budget-manager/bff.webui:local .
