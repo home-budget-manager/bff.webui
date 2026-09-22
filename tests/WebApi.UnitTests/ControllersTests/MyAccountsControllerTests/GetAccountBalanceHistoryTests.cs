@@ -11,7 +11,7 @@ public class GetAccountBalanceHistoryTests : TestBase
     private IActionResult result = null!;
 
     [Fact]
-    public void WhenAccountBalanceHistoryIsRetrivedThenResultIsCorrect()
+    public void WhenAccountBalanceHistoryIsRetrievedThenResultIsCorrect()
     {
         this.Given(t => t.AccountIdIs("429"))
             .And(t => t.ControllerIsCreated())
