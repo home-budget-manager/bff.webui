@@ -11,7 +11,7 @@ public class GetAccountOperationsSummaryTests : TestBase
     private IActionResult result = null!;
 
     [Fact]
-    public void WhenAccountOperationsSummaryIsRetrivedThenResultIsCorrect()
+    public void WhenAccountOperationsSummaryIsRetrievedThenResultIsCorrect()
     {
         this.Given(t => t.AccountIdIs("429"))
             .And(t => t.ControllerIsCreated())
