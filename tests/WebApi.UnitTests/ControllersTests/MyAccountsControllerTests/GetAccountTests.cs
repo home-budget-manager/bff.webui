@@ -11,7 +11,7 @@ public class GetAccountTests : TestBase
     private IActionResult result = null!;
 
     [Fact]
-    public void WhenAccountsAreRetrivedThenResultIsCorrect()
+    public void WhenAccountsAreRetrievedThenResultIsCorrect()
     {
         this.Given(t => t.ControllerIsCreated())
             .And(t => t.AccountIdIs("1"))
