@@ -4,8 +4,6 @@ using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.Operations;
 
 using Microsoft.AspNetCore.Mvc;
 
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 [Route("api/[controller]")]
 [ApiController]
 public class OperationsController : ControllerBase

@@ -6,6 +6,7 @@ using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
 using System.Collections.ObjectModel;
 using System.Security.Cryptography;
+using HomeBudgetManager.Bff.WebUI.ServiceClients.Accounts;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -13,15 +14,28 @@ public class MyAccountsController : ControllerBase
 {
     private readonly RandomNumberGenerator randomNumberGenerator = RandomNumberGenerator.Create();
 
-    [HttpGet]
-    public IActionResult GetAccounts()
+    private readonly IAccountsClient accountsClient;
+
+    public MyAccountsController(
+        IAccountsClient accountsClient)
     {
-        var result = new AccountData[]
-        {
-            new("1", "Checking Account", AccountType.Checking, 1000.00m, 50.00m, "USD", true),
-            new("2", "Savings Account", AccountType.Savings, 5000.00m, 100.00m, "USD", true),
-            new("3", "Credit Card", AccountType.CreditCard, -200.00m, -20.00m, "USD", false),
-        };
+        this.accountsClient = accountsClient;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAccounts(CancellationToken cancellationToken)
+    {
+        var data = await this.accountsClient.GetUserAccountsAsync(cancellationToken);
+
+        var result = data.Select(d => new AccountData(
+            d.AccountId.ToString(),
+            d.Name,
+            MapAccountType(d.AccountType),
+            d.Balance,
+            d.CurrentPeriodChange,
+            d.Currency,
+            d.IsActive)).ToArray();
+
 
         return this.Ok(result);
     }
@@ -86,5 +100,17 @@ public class MyAccountsController : ControllerBase
             "USD",
             [.. entries]);
         return this.Ok(result);
+
+    }
+
+    private static AccountType MapAccountType(string accountType)
+    {
+        return accountType switch
+        {
+            "Checking" => AccountType.Checking,
+            "Savings" => AccountType.Savings,
+            "CreditCard" => AccountType.CreditCard,
+            _ => throw new InvalidOperationException($"Unknown account type: {accountType}")
+        };
     }
 }

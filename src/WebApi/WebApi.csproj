@@ -12,4 +12,8 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceClients\ServiceClients.csproj" />
+  </ItemGroup>
+
 </Project>

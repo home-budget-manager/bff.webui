@@ -1,5 +1,6 @@
 ﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.UnitTests.ControllersTests.MyAccountsControllerTests;
 
+using HomeBudgetManager.Bff.WebUI.ServiceClients.Accounts;
 using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
 using Microsoft.AspNetCore.Mvc;
@@ -11,16 +12,28 @@ public class GetAccountsTests : TestBase
     [Fact]
     public void WhenAccountsAreRetrievedThenResultIsCorrect()
     {
-        this.Given(t => t.ControllerIsCreated())
+        this.Given(t => t.AccountsListIsMocked())
+            .And(t => t.ControllerIsCreated())
             .When(t => t.EndpointIsCalled())
             .Then(t => t.ResultIsOk())
             .And(t => t.ResultContainsAccounts())
             .BDDfy();
     }
 
-    private void EndpointIsCalled()
+    private void AccountsListIsMocked()
     {
-        this.result = this.Controller.GetAccounts();
+        this.AccountsClientMock.Setup(ac => ac.GetUserAccountsAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult<IReadOnlyCollection<AccountInfo>>(new List<AccountInfo>
+            {
+                new(Guid.NewGuid(), "Checking Account", "Checking", 1000.00m, 50.00m, "USD", true),
+                new(Guid.NewGuid(), "Savings Account", "Savings", 5000.00m, 100.00m, "USD", true),
+                new(Guid.NewGuid(), "Credit Card", "CreditCard", -200.00m, -20.00m, "USD", false),
+            }));
+    }
+
+    private async Task EndpointIsCalled()
+    {
+        this.result = await this.Controller.GetAccounts(CancellationToken.None);
     }
 
     private void ResultIsOk()
