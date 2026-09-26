@@ -23,4 +23,17 @@ public sealed class AccountsClient : IAccountsClient
         var result = await response.Content.ReadFromJsonAsync<AccountInfo[]>(cancellationToken: cancellationToken);
         return result ?? [];
     }
+
+    public async Task<AccountDetails> GetAccountDetailsAsync(Guid accountId, CancellationToken cancellationToken)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"api/userAccounts/{accountId}");
+        var response = await this.client.SendAsync(request, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException();
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<AccountDetails>(cancellationToken: cancellationToken);
+        return result ?? throw new InvalidOperationException();
+    }
 }

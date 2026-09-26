@@ -41,16 +41,22 @@ public class MyAccountsController : ControllerBase
     }
 
     [HttpGet("{accountId}")]
-    public IActionResult GetAccount(string accountId)
+    public async Task<IActionResult> GetAccount(string accountId, CancellationToken cancellationToken)
     {
+        if (!Guid.TryParse(accountId, out var accountGuid))
+        {
+            return this.BadRequest("Invalid account ID format.");
+        }
+
+        var data = await this.accountsClient.GetAccountDetailsAsync(accountGuid, cancellationToken);
         var result = new AccountData(
-            accountId,
-            "Account name from API",
-            AccountType.Checking,
-            14_543.23M,
-            1_234.56M,
-            "USD",
-            true);
+            data.AccountId.ToString(),
+            data.Name,
+            MapAccountType(data.AccountType),
+            data.Balance,
+            data.CurrentPeriodChange,
+            data.Currency,
+            data.IsActive);
         return this.Ok(result);
     }
 
