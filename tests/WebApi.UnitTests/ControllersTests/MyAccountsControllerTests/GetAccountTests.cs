@@ -25,7 +25,7 @@ public class GetAccountTests : TestBase
 
     private void EndpointIsCalled()
     {
-        this.result = this.Controller.GetAccount(this.accountId);
+        this.result = this.Controller.GetAccount(this.accountId, CancellationToken.None);
     }
 
     private void ResultIsOk()
