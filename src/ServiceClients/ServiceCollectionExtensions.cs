@@ -14,6 +14,8 @@ public static class ServiceCollectionExtensions
             c => c.Name == "services.accounts");
         services.AddHttpClient<Operations.V1.IOperationsClient, Operations.V1.OperationsClient>(
             c => c.Name == "services.operations");
+        services.AddHttpClient<Operations.V1.IAccountBalanceClient, Operations.V1.AccountBalanceClient>(
+            c => c.Name == "services.operations");
         return services;
     }
 

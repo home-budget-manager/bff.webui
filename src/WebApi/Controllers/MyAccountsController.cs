@@ -7,6 +7,8 @@ using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 using System.Collections.ObjectModel;
 using System.Security.Cryptography;
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Accounts;
+using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1;
+using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1.AccountBalance;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -16,10 +18,14 @@ public class MyAccountsController : ControllerBase
 
     private readonly IAccountsClient accountsClient;
 
+    private readonly IAccountBalanceClient accountBalanceClient;
+
     public MyAccountsController(
-        IAccountsClient accountsClient)
+        IAccountsClient accountsClient,
+        IAccountBalanceClient accountBalanceClient)
     {
         this.accountsClient = accountsClient;
+        this.accountBalanceClient = accountBalanceClient;
     }
 
     [HttpGet]
@@ -41,14 +47,9 @@ public class MyAccountsController : ControllerBase
     }
 
     [HttpGet("{accountId}")]
-    public async Task<IActionResult> GetAccount(string accountId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAccount(Guid accountId, CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(accountId, out var accountGuid))
-        {
-            return this.BadRequest("Invalid account ID format.");
-        }
-
-        var data = await this.accountsClient.GetAccountDetailsAsync(accountGuid, cancellationToken);
+        var data = await this.accountsClient.GetAccountDetailsAsync(accountId, cancellationToken);
         var result = new AccountData(
             data.AccountId.ToString(),
             data.Name,
@@ -75,37 +76,35 @@ public class MyAccountsController : ControllerBase
     }
 
     [HttpGet("{accountId}/balanceHistory")]
-    public IActionResult GetAccountBalanceHistory(string accountId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+    public async Task<IActionResult> GetAccountBalanceHistory(
+        Guid accountId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken cancellationToken)
     {
-        if (!startDate.HasValue)
+        if (!from.HasValue)
         {
-            startDate = DateTime.UtcNow.AddDays(-20);
+            var today = DateTime.UtcNow.Date;
+            from = today.AddDays(-today.Day + 1);
         }
 
-        startDate = startDate.Value.Date;
-        if (!endDate.HasValue)
+        from = from.Value.Date;
+        if (!to.HasValue)
         {
-            endDate = DateTime.UtcNow.Date;
+            var today = DateTime.UtcNow.Date;
+            to = today.AddDays(-today.Day + 1).AddMonths(1).AddDays(-1);
         }
 
-        endDate = endDate.Value.Date;
-        var entries = new Collection<BalanceHistoryEntry>();
-        var currentBalance = 12345.45M;
-        for (var currentDate = startDate.Value; currentDate <= endDate.Value; currentDate = currentDate.AddDays(1))
-        {
-            entries.Add(new BalanceHistoryEntry(currentDate, currentBalance));
-            var randomBytes = new byte[4];
-            this.randomNumberGenerator.GetBytes(randomBytes);
-            var randomValue = BitConverter.ToInt32(randomBytes, 0);
-            var dailyChange = (randomValue % 40000 - 20000) / 100M;
-            currentBalance += dailyChange;
-        }
-
-        var result = new AccountBalanceHistory(
+        to = to.Value.Date;
+        var result = await this.accountBalanceClient.GetBalanceHistoryAsync(
             accountId,
-            "USD",
-            [.. entries]);
-        return this.Ok(result);
+            new BalanceHistoryParameters(from, to),
+            cancellationToken);
+        var output = new AccountBalanceHistory(
+            accountId,
+            result.Currency,
+            result.Items.Select(i => new BalanceHistoryEntry(i.Date, i.Balance)).ToArray());
+        return this.Ok(output);
 
     }
 

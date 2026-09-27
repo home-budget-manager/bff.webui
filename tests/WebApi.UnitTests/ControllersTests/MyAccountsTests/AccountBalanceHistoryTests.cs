@@ -8,7 +8,7 @@ public class AccountBalanceHistoryTests
 {
     private readonly Collection<BalanceHistoryEntry> balanceHistory = new();
 
-    private string accountId = string.Empty;
+    private Guid accountId = Guid.Empty;
 
     private string currency = string.Empty;
 
@@ -17,7 +17,7 @@ public class AccountBalanceHistoryTests
     [Fact]
     public void WhenInstanceIsCreatedThenPropertiesAreSetCorrectly()
     {
-        this.Given(t => t.AccountIdIs("accountId"))
+        this.Given(t => t.AccountIdIs(Guid.NewGuid()))
             .And(t => t.CurrencyIs("currency"))
             .And(t => t.EntryIsAdded(new DateTime(2024, 1, 1), 100.0m))
             .And(t => t.EntryIsAdded(new DateTime(2024, 1, 2), 200.0m))
@@ -31,7 +31,7 @@ public class AccountBalanceHistoryTests
         this.balanceHistory.Add(new BalanceHistoryEntry(date, balance));
     }
 
-    private void AccountIdIs(string value) => this.accountId = value;
+    private void AccountIdIs(Guid value) => this.accountId = value;
 
     private void CurrencyIs(string value) => this.currency = value;
 

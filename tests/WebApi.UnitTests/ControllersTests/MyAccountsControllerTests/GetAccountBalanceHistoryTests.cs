@@ -1,20 +1,22 @@
 ﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.UnitTests.ControllersTests.MyAccountsControllerTests;
 
+using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1.AccountBalance;
 using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
 using Microsoft.AspNetCore.Mvc;
 
 public class GetAccountBalanceHistoryTests : TestBase
 {
-    private string accountId = string.Empty;
+    private Guid accountId = Guid.Empty;
 
     private IActionResult result = null!;
 
     [Fact]
     public void WhenAccountBalanceHistoryIsRetrievedThenResultIsCorrect()
     {
-        this.Given(t => t.AccountIdIs("429"))
+        this.Given(t => t.AccountIdIs(Guid.NewGuid()))
             .And(t => t.ControllerIsCreated())
+            .And(t => t.AccountBalanceIsMocked())
             .When(t => t.EndpointIsCalled())
             .Then(t => t.ResultIsOk())
             .And(t => t.ResultContainsAccountBalanceHistory())
@@ -22,11 +24,21 @@ public class GetAccountBalanceHistoryTests : TestBase
     }
 
 
-    private void AccountIdIs(string value) => this.accountId = value;
+    private void AccountIdIs(Guid value) => this.accountId = value;
 
-    private void EndpointIsCalled()
+    private void AccountBalanceIsMocked()
     {
-        this.result = this.Controller.GetAccountBalanceHistory(this.accountId, null, null);
+        this.AccountBalanceClientMock.Setup(c => c.GetBalanceHistoryAsync(It.IsAny<Guid>(), It.IsAny<BalanceHistoryParameters>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BalanceHistoryResult(
+                new[] { new BalanceHistoryItem(DateTime.UtcNow, 100.0m) },
+                "USD",
+                0,
+                10));
+    }
+
+    private async Task EndpointIsCalled()
+    {
+        this.result = await this.Controller.GetAccountBalanceHistory(this.accountId, null, null, CancellationToken.None);
     }
 
     private void ResultIsOk()

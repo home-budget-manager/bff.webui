@@ -3,7 +3,7 @@
 public class AccountBalanceHistory
 {
     public AccountBalanceHistory(
-        string accountId,
+        Guid accountId,
         string currency,
         BalanceHistoryEntry[] balanceHistory)
     {
@@ -12,7 +12,7 @@ public class AccountBalanceHistory
         this.BalanceHistory = balanceHistory;
     }
 
-    public string AccountId { get; }
+    public Guid AccountId { get; }
 
     public string Currency { get; }
 
