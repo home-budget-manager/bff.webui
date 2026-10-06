@@ -9,12 +9,13 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddServiceClients(
         this IServiceCollection services)
     {
-        //services.AddScoped<Accounts.IAccountsClient, Accounts.AccountsClient>();
         services.AddHttpClient<Accounts.IAccountsClient, Accounts.AccountsClient>(
             c => c.Name == "services.accounts");
         services.AddHttpClient<Operations.V1.IOperationsClient, Operations.V1.OperationsClient>(
             c => c.Name == "services.operations");
         services.AddHttpClient<Operations.V1.IAccountBalanceClient, Operations.V1.AccountBalanceClient>(
+            c => c.Name == "services.operations");
+        services.AddHttpClient<Operations.V1.ISummariesClient, Operations.V1.SummariesClient>(
             c => c.Name == "services.operations");
         return services;
     }

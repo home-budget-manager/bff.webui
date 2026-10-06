@@ -20,12 +20,16 @@ public class MyAccountsController : ControllerBase
 
     private readonly IAccountBalanceClient accountBalanceClient;
 
+    private readonly ISummariesClient summariesClient;
+
     public MyAccountsController(
         IAccountsClient accountsClient,
-        IAccountBalanceClient accountBalanceClient)
+        IAccountBalanceClient accountBalanceClient,
+        ISummariesClient summariesClient)
     {
         this.accountsClient = accountsClient;
         this.accountBalanceClient = accountBalanceClient;
+        this.summariesClient = summariesClient;
     }
 
     [HttpGet]
@@ -62,16 +66,20 @@ public class MyAccountsController : ControllerBase
     }
 
     [HttpGet("{accountId}/operationsSummary")]
-    public IActionResult GetAccountOperationsSummary(string accountId)
+    public async Task<IActionResult> GetAccountOperationsSummary(string accountId, CancellationToken cancellationToken)
     {
+        var data = await this.summariesClient.GetSummariesAsync(Guid.Parse(accountId), cancellationToken);
+        if (data is null)
+        {
+            return this.NotFound();
+        }
+
         var result = new OperationsSummary(
-            "USD",
-            [
-                new SummaryItem(SummaryItemType.Incomes, 4, 5050M),
-                new SummaryItem(SummaryItemType.Expenses, 3, -1640.91M),
-                new SummaryItem(SummaryItemType.TransfersIncoming, 1, 28.5M),
-                new SummaryItem(SummaryItemType.TransfersOutgoing, 1, -1028.5M)
-            ]);
+            data.Currency,
+            [.. data.Summaries.Select(s => new SummaryItem(
+                MapSummaryItemType(s.ItemType),
+                s.Count,
+                s.Amount))]);
         return this.Ok(result);
     }
 
@@ -116,6 +124,18 @@ public class MyAccountsController : ControllerBase
             "Savings" => AccountType.Savings,
             "CreditCard" => AccountType.CreditCard,
             _ => throw new InvalidOperationException($"Unknown account type: {accountType}")
+        };
+    }
+
+    private static SummaryItemType MapSummaryItemType(string itemType)
+    {
+        return itemType switch
+        {
+            "incomes" => SummaryItemType.Incomes,
+            "expenses" => SummaryItemType.Expenses,
+            "transfersIncoming" => SummaryItemType.TransfersIncoming,
+            "transfersOutgoing" => SummaryItemType.TransfersOutgoing,
+            _ => throw new InvalidOperationException($"Unknown summary item type: {itemType}")
         };
     }
 }
