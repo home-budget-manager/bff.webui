@@ -4,16 +4,19 @@ using Microsoft.AspNetCore.Mvc;
 
 using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
-using System.Collections.ObjectModel;
 using System.Security.Cryptography;
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Accounts;
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1;
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1.AccountBalance;
 
+using AccountsSdk = HomeBudgetManager.Services.Accounts.Sdk;
+
 [Route("api/[controller]")]
 [ApiController]
 public class MyAccountsController : ControllerBase
 {
+    private const string GetAccountDetailsRouteName = "GetAccountDetails";
+
     private readonly RandomNumberGenerator randomNumberGenerator = RandomNumberGenerator.Create();
 
     private readonly IAccountsClient accountsClient;
@@ -22,14 +25,34 @@ public class MyAccountsController : ControllerBase
 
     private readonly ISummariesClient summariesClient;
 
+    private readonly AccountsSdk.UserAccounts.IUserAccountsClient client;
+
     public MyAccountsController(
         IAccountsClient accountsClient,
         IAccountBalanceClient accountBalanceClient,
-        ISummariesClient summariesClient)
+        ISummariesClient summariesClient,
+        AccountsSdk.UserAccounts.IUserAccountsClient client)
     {
         this.accountsClient = accountsClient;
         this.accountBalanceClient = accountBalanceClient;
         this.summariesClient = summariesClient;
+        this.client = client;
+    }
+
+    [HttpPost]
+    public async Task<IResult> CreateAccount([FromBody] CreateAccountInput input, CancellationToken cancellationToken)
+    {
+        var result = await this.client.Create(new AccountsSdk.UserAccounts.CreateAccountRequest(
+            input.Name,
+            input.AccountTypeId,
+            input.Description,
+            input.Currency), cancellationToken);
+        return result.Response.Match(
+            r => Results.CreatedAtRoute(
+                GetAccountDetailsRouteName,
+                new { accountId = r.AccountId }, new { accountId = r.AccountId }),
+            e => Results.BadRequest(e.Message),
+            e => Results.InternalServerError(e.Message));
     }
 
     [HttpGet]
@@ -40,7 +63,7 @@ public class MyAccountsController : ControllerBase
         var result = data.Select(d => new AccountData(
             d.AccountId.ToString(),
             d.Name,
-            MapAccountType(d.AccountType),
+            d.AccountType,
             d.Balance,
             d.CurrentPeriodChange,
             d.Currency,
@@ -57,7 +80,7 @@ public class MyAccountsController : ControllerBase
         var result = new AccountData(
             data.AccountId.ToString(),
             data.Name,
-            MapAccountType(data.AccountType),
+            data.AccountType,
             data.Balance,
             data.CurrentPeriodChange,
             data.Currency,
@@ -114,17 +137,6 @@ public class MyAccountsController : ControllerBase
             result.Items.Select(i => new BalanceHistoryEntry(i.Date, i.Balance)).ToArray());
         return this.Ok(output);
 
-    }
-
-    private static AccountType MapAccountType(string accountType)
-    {
-        return accountType switch
-        {
-            "Checking" => AccountType.Checking,
-            "Savings" => AccountType.Savings,
-            "CreditCard" => AccountType.CreditCard,
-            _ => throw new InvalidOperationException($"Unknown account type: {accountType}")
-        };
     }
 
     private static SummaryItemType MapSummaryItemType(string itemType)

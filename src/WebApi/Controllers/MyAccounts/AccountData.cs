@@ -5,7 +5,7 @@ public class AccountData
     public AccountData(
         string id,
         string name,
-        AccountType type,
+        string type,
         decimal balance,
         decimal currentPeriodChange,
         string currency,
@@ -24,7 +24,7 @@ public class AccountData
 
     public string Name { get; }
 
-    public AccountType Type { get; }
+    public string Type { get; }
 
     public decimal Balance { get; }
 
