@@ -1,6 +1,10 @@
+# syntax=docker/dockerfile:1.4
+
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
+
+ARG NUGET_USERNAME=github
 
 # Copy project file and restore dependencies
 COPY ["src/ServiceClients/ServiceClients.csproj", "./src/ServiceClients/"]
@@ -8,7 +12,11 @@ COPY ["src/WebApi/WebApi.csproj", "./src/WebApi/"]
 COPY ["tests/WebApi.UnitTests/WebApi.UnitTests.csproj", "./tests/WebApi.UnitTests/"]
 COPY ["Bff.WebUI.slnx", "./"]
 COPY ["Directory.Packages.props", "./"]
-RUN dotnet restore "./Bff.WebUI.slnx"
+COPY ["NuGet.Config", "./"]
+
+RUN --mount=type=secret,id=nuget_pat \
+    NuGetPackageSourceCredentials_HomeBudgetManager="Username=${NUGET_USERNAME};Password=$(cat /run/secrets/nuget_pat)" \
+    dotnet restore "./Bff.WebUI.slnx"
 
 # Copy source and publish
 COPY . .
