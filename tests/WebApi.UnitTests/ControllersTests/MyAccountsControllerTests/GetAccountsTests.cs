@@ -2,12 +2,15 @@
 
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Accounts;
 using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
+using HomeBudgetManager.Services.Accounts.Sdk;
+using HomeBudgetManager.Services.Accounts.Sdk.UserAccounts;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 public class GetAccountsTests : TestBase
 {
-    private IActionResult result = null!;
+    private IResult result = null!;
 
     [Fact]
     public void WhenAccountsAreRetrievedThenResultIsCorrect()
@@ -22,13 +25,13 @@ public class GetAccountsTests : TestBase
 
     private void AccountsListIsMocked()
     {
-        this.AccountsClientMock.Setup(ac => ac.GetUserAccountsAsync(It.IsAny<CancellationToken>()))
-            .Returns(Task.FromResult<IReadOnlyCollection<AccountInfo>>(new List<AccountInfo>
-            {
-                new(Guid.NewGuid(), "Checking Account", "Checking", 1000.00m, 50.00m, "USD", true),
-                new(Guid.NewGuid(), "Savings Account", "Savings", 5000.00m, 100.00m, "USD", true),
-                new(Guid.NewGuid(), "Credit Card", "CreditCard", -200.00m, -20.00m, "USD", false),
-            }));
+        var expectedResponse = new ResponseWrapper<GetUserAccountsResponse>(new GetUserAccountsResponse([
+                new GetUserAccountsResponse.Account(Guid.NewGuid(), "Checking Account", new(1, "Checking"), "USD", 1000.00m),
+                new GetUserAccountsResponse.Account(Guid.NewGuid(), "Savings Account", new(2, "Savings"), "USD", 5000.00m),
+                new GetUserAccountsResponse.Account(Guid.NewGuid(), "Credit Card", new(3, "CreditCard"), "USD", -200.00m),
+            ]));
+        this.UserAccountsClientMock.Setup(ac => ac.GetUserAccounts(It.IsAny<GetUserAccountsRequest>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult(expectedResponse));
     }
 
     private async Task EndpointIsCalled()

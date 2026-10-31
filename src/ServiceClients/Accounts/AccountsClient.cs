@@ -2,14 +2,9 @@
 
 using System.Net.Http.Json;
 
-public sealed class AccountsClient : IAccountsClient
+public sealed class AccountsClient(HttpClient client) : IAccountsClient
 {
-    private readonly HttpClient client;
-
-    public AccountsClient(HttpClient client)
-    {
-        this.client = client;
-    }
+    private readonly HttpClient client = client;
 
     public async Task<IReadOnlyCollection<AccountInfo>> GetUserAccountsAsync(CancellationToken cancellationToken)
     {

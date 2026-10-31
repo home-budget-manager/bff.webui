@@ -13,31 +13,23 @@ using AccountsSdk = HomeBudgetManager.Services.Accounts.Sdk;
 
 [Route("api/[controller]")]
 [ApiController]
-public class MyAccountsController : ControllerBase
+public class MyAccountsController(
+    IAccountsClient accountsClient,
+    IAccountBalanceClient accountBalanceClient,
+    ISummariesClient summariesClient,
+    AccountsSdk.UserAccounts.IUserAccountsClient client) : ControllerBase
 {
     private const string GetAccountDetailsRouteName = "GetAccountDetails";
 
     private readonly RandomNumberGenerator randomNumberGenerator = RandomNumberGenerator.Create();
 
-    private readonly IAccountsClient accountsClient;
+    private readonly IAccountsClient accountsClient = accountsClient;
 
-    private readonly IAccountBalanceClient accountBalanceClient;
+    private readonly IAccountBalanceClient accountBalanceClient = accountBalanceClient;
 
-    private readonly ISummariesClient summariesClient;
+    private readonly ISummariesClient summariesClient = summariesClient;
 
-    private readonly AccountsSdk.UserAccounts.IUserAccountsClient client;
-
-    public MyAccountsController(
-        IAccountsClient accountsClient,
-        IAccountBalanceClient accountBalanceClient,
-        ISummariesClient summariesClient,
-        AccountsSdk.UserAccounts.IUserAccountsClient client)
-    {
-        this.accountsClient = accountsClient;
-        this.accountBalanceClient = accountBalanceClient;
-        this.summariesClient = summariesClient;
-        this.client = client;
-    }
+    private readonly AccountsSdk.UserAccounts.IUserAccountsClient client = client;
 
     [HttpPost]
     public async Task<IResult> CreateAccount([FromBody] CreateAccountInput input, CancellationToken cancellationToken)
@@ -56,21 +48,21 @@ public class MyAccountsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAccounts(CancellationToken cancellationToken)
+    public async Task<IResult> GetAccounts(CancellationToken cancellationToken)
     {
-        var data = await this.accountsClient.GetUserAccountsAsync(cancellationToken);
+        var result = await this.client.GetUserAccounts(new(), cancellationToken);
 
-        var result = data.Select(d => new AccountData(
-            d.AccountId.ToString(),
-            d.Name,
-            d.AccountType,
-            d.Balance,
-            d.CurrentPeriodChange,
-            d.Currency,
-            d.IsActive)).ToArray();
-
-
-        return this.Ok(result);
+        return result.Response.Match(
+            r => Results.Ok(r.Accounts.Select(d => new AccountData(
+                d.Id.ToString(),
+                d.Name,
+                new(d.AccountType.Id, d.AccountType.Name),
+                d.Balance,
+                0,
+                d.Currency,
+                true)).ToArray()),
+            e => Results.BadRequest(e.Message),
+            e => Results.InternalServerError(e.Message));
     }
 
     [HttpGet("{accountId}")]
@@ -80,7 +72,7 @@ public class MyAccountsController : ControllerBase
         var result = new AccountData(
             data.AccountId.ToString(),
             data.Name,
-            data.AccountType,
+            new(1, data.AccountType),
             data.Balance,
             data.CurrentPeriodChange,
             data.Currency,

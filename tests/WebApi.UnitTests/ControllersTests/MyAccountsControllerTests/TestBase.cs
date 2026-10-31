@@ -12,6 +12,8 @@ public class TestBase
 
     private readonly Mock<ISummariesClient> summariesClientMock = new();
 
+    private readonly Mock<HomeBudgetManager.Services.Accounts.Sdk.UserAccounts.IUserAccountsClient> userAccountsClientMock = new();
+
     private MyAccountsController controller = null!;
 
     protected MyAccountsController Controller => this.controller;
@@ -22,8 +24,10 @@ public class TestBase
 
     protected Mock<ISummariesClient> SummariesClientMock => this.summariesClientMock;
 
+    protected Mock<HomeBudgetManager.Services.Accounts.Sdk.UserAccounts.IUserAccountsClient> UserAccountsClientMock => this.userAccountsClientMock;
+
     protected void ControllerIsCreated()
     {
-        this.controller = new MyAccountsController(this.accountsClientMock.Object, this.accountBalanceClientMock.Object, this.summariesClientMock.Object);
+        this.controller = new MyAccountsController(this.accountsClientMock.Object, this.accountBalanceClientMock.Object, this.summariesClientMock.Object, this.userAccountsClientMock.Object);
     }
 }
