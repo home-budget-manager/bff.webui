@@ -23,8 +23,6 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore Bff.WebUI.slnx
-        env:
-          NugetPackageSourceCredentials_HomeBudgetManager: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
         run: dotnet build Bff.WebUI.slnx --configuration Release --no-restore
