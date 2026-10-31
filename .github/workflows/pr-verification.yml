@@ -9,6 +9,8 @@ jobs:
   verify:
     name: Build and test
     runs-on: ubuntu-latest
+    permissions:
+      packages: read
 
     steps:
       - name: Checkout repository
