@@ -27,7 +27,7 @@ jobs:
             --username $GITHUB_ACTOR \
             --password $NUGET_AUTH_TOKEN \
             --store-password-in-clear-text \
-            --configfile nuget.config
+            --configfile NuGet.Config
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
