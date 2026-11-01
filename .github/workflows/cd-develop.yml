@@ -43,6 +43,8 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
+        env:
+          NUGET_PAT: ${{ secrets.GITHUB_TOKEN }}
         with:
           context: .
           file: ./Api.Dockerfile
@@ -50,3 +52,7 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:${{ steps.version.outputs.tag }}
             ghcr.io/${{ github.repository }}:develop
+          build-args: |
+            NUGET_USERNAME=HomeBudgetManager
+          secret-envs: |
+            nuget_pat=NUGET_PAT
