@@ -6,6 +6,7 @@ using HomeBudgetManager.Services.Accounts.Sdk;
 using HomeBudgetManager.Services.Accounts.Sdk.UserAccounts;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 public class GetAccountsTests : TestBase
@@ -41,14 +42,14 @@ public class GetAccountsTests : TestBase
 
     private void ResultIsOk()
     {
-        this.result.ShouldBeOfType<OkObjectResult>();
+        this.result.ShouldBeOfType<Ok<AccountData[]>>();
     }
 
     private void ResultContainsAccounts()
     {
-        var okResult = this.result as OkObjectResult;
+        var okResult = this.result as Ok<AccountData[]>;
         okResult.ShouldNotBeNull();
-        var accounts = okResult!.Value as AccountData[];
+        var accounts = okResult!.Value;
         accounts.ShouldNotBeNull();
         accounts!.Length.ShouldBeGreaterThan(0);
     }
