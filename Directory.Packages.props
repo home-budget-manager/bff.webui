@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Bogus" Version="35.6.5" />
-    <PackageVersion Include="HomeBudgetManager.Services.Accounts.Sdk" Version="0.1.0-test-20261031191411" />
+    <PackageVersion Include="HomeBudgetManager.Services.Accounts.Sdk" Version="0.1.0-develop-20261101-2253" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.12" />

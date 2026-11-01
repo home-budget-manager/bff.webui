@@ -25,7 +25,6 @@ public static class ServicesSetupExtensions
 
     private static void RegisterAccountsApi(this IServiceCollection services, AccountsSdk.ISettings settings)
     {
-        services.AddScoped<Func<AccountsSdk.IRequestBuilder>>(sp => () => new AccountsSdk.RequestBuilder());
         services.AddAccountsSdk(settings);
     }
 

@@ -2,12 +2,10 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
-
-using System.Security.Cryptography;
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Accounts;
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1;
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1.AccountBalance;
+using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
 using AccountsSdk = HomeBudgetManager.Services.Accounts.Sdk;
 
@@ -20,8 +18,6 @@ public class MyAccountsController(
     AccountsSdk.UserAccounts.IUserAccountsClient client) : ControllerBase
 {
     private const string GetAccountDetailsRouteName = "GetAccountDetails";
-
-    private readonly RandomNumberGenerator randomNumberGenerator = RandomNumberGenerator.Create();
 
     private readonly IAccountsClient accountsClient = accountsClient;
 
@@ -65,7 +61,7 @@ public class MyAccountsController(
             e => Results.InternalServerError(e.Message));
     }
 
-    [HttpGet("{accountId}")]
+    [HttpGet("{accountId}", Name = GetAccountDetailsRouteName)]
     public async Task<IActionResult> GetAccount(Guid accountId, CancellationToken cancellationToken)
     {
         var data = await this.accountsClient.GetAccountDetailsAsync(accountId, cancellationToken);
