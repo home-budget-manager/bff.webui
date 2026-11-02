@@ -1,5 +1,7 @@
 ﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.UnitTests.ControllersTests.MyAccountsControllerTests;
 
+using System.Net;
+
 using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +24,22 @@ public class GetAccountOperationsSummaryTests : TestBase
             .Then(t => t.ResultIsOk())
             .And(t => t.ResultContainsOperationsSummary())
             .BDDfy();
+    }
+
+    [Fact]
+    public async Task WhenSummaryServiceReturnsAnErrorThenUpstreamStatusCodeIsReturned()
+    {
+        var upstreamStatusCode = HttpStatusCode.BadGateway;
+        this.ControllerIsCreated();
+        this.SummariesClientMock
+            .Setup(c => c.GetSummariesAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new HttpRequestException("Upstream request failed.", null, upstreamStatusCode));
+
+        var result = await this.Controller.GetAccountOperationsSummary(
+            Guid.NewGuid().ToString(),
+            CancellationToken.None);
+
+        result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe((int)upstreamStatusCode);
     }
 
     private void AccountIdIs(string value) => this.accountId = value;

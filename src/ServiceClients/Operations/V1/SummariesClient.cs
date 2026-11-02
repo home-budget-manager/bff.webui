@@ -17,10 +17,7 @@ public sealed class SummariesClient : ISummariesClient
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"api/v1/summaries/{accountId}");
         var response = await this.client.SendAsync(request, cancellationToken);
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new InvalidOperationException();
-        }
+        response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<GetSummariesResult>(cancellationToken);
         return result;
