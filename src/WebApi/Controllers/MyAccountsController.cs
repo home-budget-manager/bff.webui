@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Accounts;
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1;
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1.AccountBalance;
-using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1.Summaries;
 using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
 using AccountsSdk = HomeBudgetManager.Services.Accounts.Sdk;
+using GetSummariesResult = HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1.Summaries.GetSummariesResult;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -78,12 +78,12 @@ public class MyAccountsController(
     }
 
     [HttpGet("{accountId}/operationsSummary")]
-    public async Task<IActionResult> GetAccountOperationsSummary(string accountId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAccountOperationsSummary(Guid accountId, CancellationToken cancellationToken)
     {
         GetSummariesResult? data;
         try
         {
-            data = await this.summariesClient.GetSummariesAsync(Guid.Parse(accountId), cancellationToken);
+            data = await this.summariesClient.GetSummariesAsync(accountId, cancellationToken);
         }
         catch (HttpRequestException exception) when (exception.StatusCode.HasValue)
         {

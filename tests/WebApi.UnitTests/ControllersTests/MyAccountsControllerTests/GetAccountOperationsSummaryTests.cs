@@ -10,14 +10,14 @@ using ApiModel = HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1.Summar
 
 public class GetAccountOperationsSummaryTests : TestBase
 {
-    private string accountId = string.Empty;
+    private Guid accountId;
 
     private IActionResult result = null!;
 
     [Fact]
     public void WhenAccountOperationsSummaryIsRetrievedThenResultIsCorrect()
     {
-        this.Given(t => t.AccountIdIs(Guid.NewGuid().ToString()))
+        this.Given(t => t.AccountIdIs(Guid.NewGuid()))
             .And(t => t.ControllerIsCreated())
             .And(t => t.SummariesAreMocked())
             .When(t => t.EndpointIsCalled())
@@ -36,13 +36,13 @@ public class GetAccountOperationsSummaryTests : TestBase
             .ThrowsAsync(new HttpRequestException("Upstream request failed.", null, upstreamStatusCode));
 
         var result = await this.Controller.GetAccountOperationsSummary(
-            Guid.NewGuid().ToString(),
+            Guid.NewGuid(),
             CancellationToken.None);
 
         result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe((int)upstreamStatusCode);
     }
 
-    private void AccountIdIs(string value) => this.accountId = value;
+    private void AccountIdIs(Guid value) => this.accountId = value;
 
     private void SummariesAreMocked()
     {
