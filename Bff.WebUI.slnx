@@ -9,7 +9,7 @@
     <File Path="NuGet.Config" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/ServiceClients/ServiceClients.csproj" Id="1fea4de8-b041-4cb6-854d-a9d0cb457441" />
+    <Project Path="src/ServiceClients/ServiceClients.csproj" />
     <Project Path="src/WebApi/WebApi.csproj" />
   </Folder>
   <Folder Name="/tests/">

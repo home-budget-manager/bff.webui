@@ -1,15 +1,18 @@
 ﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.UnitTests.ControllersTests.MyAccountsControllerTests;
 
-using HomeBudgetManager.Bff.WebUI.ServiceClients.Accounts;
 using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
+using HomeBudgetManager.Services.Accounts.Sdk;
+using HomeBudgetManager.Services.Accounts.Sdk.UserAccounts;
 
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 public class GetAccountTests : TestBase
 {
     private Guid accountId = Guid.Empty;
 
-    private IActionResult result = null!;
+    private IResult result = null!;
 
     [Fact]
     public void WhenAccountsAreRetrievedThenResultIsCorrect()
@@ -27,17 +30,18 @@ public class GetAccountTests : TestBase
 
     private void GetAccountIsMocked()
     {
-        this.AccountsClientMock.Setup(c => c.GetAccountDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AccountDetails(
+        var expectedResult = new ResponseWrapper<GetUserAccountResponse>(
+            new GetUserAccountResponse(new(
                 this.accountId,
                 "Test Account",
-                "Checking",
-                DateTimeOffset.UtcNow,
+                new(1, "Checking"),
                 "Description",
-                100.0m,
-                10.0m,
+                DateTimeOffset.UtcNow,
                 "USD",
-                true));
+                100.0m,
+                true))); 
+        this.UserAccountsClientMock.Setup(c => c.GetUserAccount(It.IsAny<GetUserAccountRequest>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult(expectedResult));
     }
 
     private async Task EndpointIsCalled()
@@ -47,14 +51,14 @@ public class GetAccountTests : TestBase
 
     private void ResultIsOk()
     {
-        this.result.ShouldBeOfType<OkObjectResult>();
+        this.result.ShouldBeOfType<Ok<AccountData>>();
     }
 
     private void ResultContainsAccount()
     {
-        var okResult = this.result as OkObjectResult;
+        var okResult = this.result as Ok<AccountData>;
         okResult.ShouldNotBeNull();
-        var account = okResult!.Value as AccountData;
+        var account = okResult!.Value;
         account.ShouldNotBeNull();
     }
 }

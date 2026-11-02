@@ -1,6 +1,5 @@
 ﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.UnitTests.ControllersTests.MyAccountsControllerTests;
 
-using HomeBudgetManager.Bff.WebUI.ServiceClients.Accounts;
 using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 using HomeBudgetManager.Services.Accounts.Sdk;
 using HomeBudgetManager.Services.Accounts.Sdk.UserAccounts;
@@ -27,9 +26,9 @@ public class GetAccountsTests : TestBase
     private void AccountsListIsMocked()
     {
         var expectedResponse = new ResponseWrapper<GetUserAccountsResponse>(new GetUserAccountsResponse([
-                new GetUserAccountsResponse.Account(Guid.NewGuid(), "Checking Account", new(1, "Checking"), "USD", 1000.00m),
-                new GetUserAccountsResponse.Account(Guid.NewGuid(), "Savings Account", new(2, "Savings"), "USD", 5000.00m),
-                new GetUserAccountsResponse.Account(Guid.NewGuid(), "Credit Card", new(3, "CreditCard"), "USD", -200.00m),
+                new GetUserAccountsResponse.Account(Guid.NewGuid(), "Checking Account", new(1, "Checking"), "USD", 1000.00m, true),
+                new GetUserAccountsResponse.Account(Guid.NewGuid(), "Savings Account", new(2, "Savings"), "USD", 5000.00m, false),
+                new GetUserAccountsResponse.Account(Guid.NewGuid(), "Credit Card", new(3, "CreditCard"), "USD", -200.00m, true),
             ]));
         this.UserAccountsClientMock.Setup(ac => ac.GetUserAccounts(It.IsAny<GetUserAccountsRequest>(), It.IsAny<CancellationToken>()))
             .Returns(Task.FromResult(expectedResponse));
