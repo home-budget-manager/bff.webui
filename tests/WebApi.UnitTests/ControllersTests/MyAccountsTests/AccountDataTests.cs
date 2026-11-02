@@ -8,7 +8,7 @@ public class AccountDataTests
 
     private string name = "account-name";
 
-    private AccountType accountType = AccountType.Checking;
+    private AccountType accountType = null!;
 
     private decimal balance = 100.50m;
 
@@ -65,7 +65,7 @@ public class AccountDataTests
     {
         this.instance.Id.ShouldBe(this.id);
         this.instance.Name.ShouldBe(this.name);
-        this.instance.Type.ShouldBe(this.accountType);
+        this.instance.AccountType.ShouldBe(this.accountType);
         this.instance.Balance.ShouldBe(this.balance);
         this.instance.CurrentPeriodChange.ShouldBe(this.currentPeriodChange);
         this.instance.Currency.ShouldBe(this.currency);

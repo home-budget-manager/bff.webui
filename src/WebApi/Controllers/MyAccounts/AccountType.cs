@@ -1,10 +1,10 @@
 ﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
-public enum AccountType
+public sealed class AccountType(
+    int id,
+    string name)
 {
-    None = 0,
-    Checking = 1,
-    Savings = 2,
-    CashWallet = 3,
-    CreditCard = 4,
+    public int Id { get; } = id;
+
+    public string Name { get; } = name;
 }

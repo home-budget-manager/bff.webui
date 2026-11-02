@@ -2,89 +2,150 @@
 
 using Microsoft.AspNetCore.Mvc;
 
+using HomeBudgetManager.Bff.WebUI.ServiceClients.Accounts;
+using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1;
+using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1.AccountBalance;
 using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
 
-using System.Collections.ObjectModel;
-using System.Security.Cryptography;
+using AccountsSdk = HomeBudgetManager.Services.Accounts.Sdk;
+using GetSummariesResult = HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1.Summaries.GetSummariesResult;
 
 [Route("api/[controller]")]
 [ApiController]
-public class MyAccountsController : ControllerBase
+public class MyAccountsController(
+    IAccountsClient accountsClient,
+    IAccountBalanceClient accountBalanceClient,
+    ISummariesClient summariesClient,
+    AccountsSdk.UserAccounts.IUserAccountsClient client) : ControllerBase
 {
-    private readonly RandomNumberGenerator randomNumberGenerator = RandomNumberGenerator.Create();
+    private const string GetAccountDetailsRouteName = "GetAccountDetails";
 
-    [HttpGet]
-    public IActionResult GetAccounts()
+    private readonly IAccountsClient accountsClient = accountsClient;
+
+    private readonly IAccountBalanceClient accountBalanceClient = accountBalanceClient;
+
+    private readonly ISummariesClient summariesClient = summariesClient;
+
+    private readonly AccountsSdk.UserAccounts.IUserAccountsClient client = client;
+
+    [HttpPost]
+    public async Task<IResult> CreateAccount([FromBody] CreateAccountInput input, CancellationToken cancellationToken)
     {
-        var result = new AccountData[]
-        {
-            new("1", "Checking Account", AccountType.Checking, 1000.00m, 50.00m, "USD", true),
-            new("2", "Savings Account", AccountType.Savings, 5000.00m, 100.00m, "USD", true),
-            new("3", "Credit Card", AccountType.CreditCard, -200.00m, -20.00m, "USD", false),
-        };
-
-        return this.Ok(result);
+        var result = await this.client.Create(new AccountsSdk.UserAccounts.CreateAccountRequest(
+            input.Name,
+            input.AccountTypeId,
+            input.Description,
+            input.Currency), cancellationToken);
+        return result.Response.Match(
+            r => Results.CreatedAtRoute(
+                GetAccountDetailsRouteName,
+                new { accountId = r.AccountId }, new { accountId = r.AccountId }),
+            e => Results.BadRequest(e.Message),
+            e => Results.InternalServerError(e.Message));
     }
 
-    [HttpGet("{accountId}")]
-    public IActionResult GetAccount(string accountId)
+    [HttpGet]
+    public async Task<IResult> GetAccounts(CancellationToken cancellationToken)
     {
+        var result = await this.client.GetUserAccounts(new(), cancellationToken);
+
+        return result.Response.Match(
+            r => Results.Ok(r.Accounts.Select(d => new AccountData(
+                d.Id.ToString(),
+                d.Name,
+                new(d.AccountType.Id, d.AccountType.Name),
+                d.Balance,
+                0,
+                d.Currency,
+                true)).ToArray()),
+            e => Results.BadRequest(e.Message),
+            e => Results.InternalServerError(e.Message));
+    }
+
+    [HttpGet("{accountId}", Name = GetAccountDetailsRouteName)]
+    public async Task<IActionResult> GetAccount(Guid accountId, CancellationToken cancellationToken)
+    {
+        var data = await this.accountsClient.GetAccountDetailsAsync(accountId, cancellationToken);
         var result = new AccountData(
-            accountId,
-            "Account name from API",
-            AccountType.Checking,
-            14_543.23M,
-            1_234.56M,
-            "USD",
-            true);
+            data.AccountId.ToString(),
+            data.Name,
+            new(1, data.AccountType),
+            data.Balance,
+            data.CurrentPeriodChange,
+            data.Currency,
+            data.IsActive);
         return this.Ok(result);
     }
 
     [HttpGet("{accountId}/operationsSummary")]
-    public IActionResult GetAccountOperationsSummary(string accountId)
+    public async Task<IActionResult> GetAccountOperationsSummary(Guid accountId, CancellationToken cancellationToken)
     {
+        GetSummariesResult? data;
+        try
+        {
+            data = await this.summariesClient.GetSummariesAsync(accountId, cancellationToken);
+        }
+        catch (HttpRequestException exception) when (exception.StatusCode.HasValue)
+        {
+            return this.StatusCode((int)exception.StatusCode.Value);
+        }
+
+        if (data is null)
+        {
+            return this.NotFound();
+        }
+
         var result = new OperationsSummary(
-            "USD",
-            [
-                new SummaryItem(SummaryItemType.Incomes, 4, 5050M),
-                new SummaryItem(SummaryItemType.Expenses, 3, -1640.91M),
-                new SummaryItem(SummaryItemType.TransfersIncoming, 1, 28.5M),
-                new SummaryItem(SummaryItemType.TransfersOutgoing, 1, -1028.5M)
-            ]);
+            data.Currency,
+            [.. data.Summaries.Select(s => new SummaryItem(
+                MapSummaryItemType(s.ItemType),
+                s.Count,
+                s.Amount))]);
         return this.Ok(result);
     }
 
     [HttpGet("{accountId}/balanceHistory")]
-    public IActionResult GetAccountBalanceHistory(string accountId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+    public async Task<IActionResult> GetAccountBalanceHistory(
+        Guid accountId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken cancellationToken)
     {
-        if (!startDate.HasValue)
+        if (!from.HasValue)
         {
-            startDate = DateTime.UtcNow.AddDays(-20);
+            var today = DateTime.UtcNow.Date;
+            from = today.AddDays(-today.Day + 1);
         }
 
-        startDate = startDate.Value.Date;
-        if (!endDate.HasValue)
+        from = from.Value.Date;
+        if (!to.HasValue)
         {
-            endDate = DateTime.UtcNow.Date;
+            var today = DateTime.UtcNow.Date;
+            to = today.AddDays(-today.Day + 1).AddMonths(1).AddDays(-1);
         }
 
-        endDate = endDate.Value.Date;
-        var entries = new Collection<BalanceHistoryEntry>();
-        var currentBalance = 12345.45M;
-        for (var currentDate = startDate.Value; currentDate <= endDate.Value; currentDate = currentDate.AddDays(1))
-        {
-            entries.Add(new BalanceHistoryEntry(currentDate, currentBalance));
-            var randomBytes = new byte[4];
-            this.randomNumberGenerator.GetBytes(randomBytes);
-            var randomValue = BitConverter.ToInt32(randomBytes, 0);
-            var dailyChange = (randomValue % 40000 - 20000) / 100M;
-            currentBalance += dailyChange;
-        }
-
-        var result = new AccountBalanceHistory(
+        to = to.Value.Date;
+        var result = await this.accountBalanceClient.GetBalanceHistoryAsync(
             accountId,
-            "USD",
-            [.. entries]);
-        return this.Ok(result);
+            new BalanceHistoryParameters(from, to),
+            cancellationToken);
+        var output = new AccountBalanceHistory(
+            accountId,
+            result.Currency,
+            result.Items.Select(i => new BalanceHistoryEntry(i.Date, i.Balance)).ToArray());
+        return this.Ok(output);
+
+    }
+
+    private static SummaryItemType MapSummaryItemType(string itemType)
+    {
+        return itemType switch
+        {
+            "incomes" => SummaryItemType.Incomes,
+            "expenses" => SummaryItemType.Expenses,
+            "transfersIncoming" => SummaryItemType.TransfersIncoming,
+            "transfersOutgoing" => SummaryItemType.TransfersOutgoing,
+            _ => throw new InvalidOperationException($"Unknown summary item type: {itemType}")
+        };
     }
 }

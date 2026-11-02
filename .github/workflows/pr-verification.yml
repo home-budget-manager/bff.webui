@@ -9,6 +9,8 @@ jobs:
   verify:
     name: Build and test
     runs-on: ubuntu-latest
+    permissions:
+      packages: read
 
     steps:
       - name: Checkout repository
@@ -18,6 +20,16 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+
+      - name: Authenticate NuGet
+        run: |
+          dotnet nuget update source HomeBudgetManager \
+            --username $GITHUB_ACTOR \
+            --password $NUGET_AUTH_TOKEN \
+            --store-password-in-clear-text \
+            --configfile NuGet.Config
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Restore dependencies
         run: dotnet restore Bff.WebUI.slnx

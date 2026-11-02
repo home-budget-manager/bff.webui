@@ -1,1 +1,1 @@
-docker build -f Api.Dockerfile -t home-budget-manager/bff.webui:local .
+docker build --secret id=nuget_pat,src=.nuget_pat --build-arg NUGET_USERNAME=HomeBudgetManager -f Api.Dockerfile . -t home-budget-manager/bff.webui:local
