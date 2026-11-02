@@ -15,7 +15,10 @@ public class SummariesClientTests
             new HttpResponseMessage(HttpStatusCode.BadGateway)
             {
                 Content = new StringContent(responseBody)
-            }));
+            }))
+        {
+            BaseAddress = new Uri("http://localhost/")
+        };
         var client = new SummariesClient(httpClient);
 
         var exception = await Should.ThrowAsync<HttpRequestException>(
