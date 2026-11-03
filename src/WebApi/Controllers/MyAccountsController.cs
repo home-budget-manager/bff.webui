@@ -2,7 +2,6 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-using HomeBudgetManager.Bff.WebUI.ServiceClients.Accounts;
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1;
 using HomeBudgetManager.Bff.WebUI.ServiceClients.Operations.V1.AccountBalance;
 using HomeBudgetManager.Bff.WebUI.WebApi.Controllers.MyAccounts;
@@ -13,14 +12,11 @@ using GetSummariesResult = HomeBudgetManager.Bff.WebUI.ServiceClients.Operations
 [Route("api/[controller]")]
 [ApiController]
 public class MyAccountsController(
-    IAccountsClient accountsClient,
     IAccountBalanceClient accountBalanceClient,
     ISummariesClient summariesClient,
     AccountsSdk.UserAccounts.IUserAccountsClient client) : ControllerBase
 {
     private const string GetAccountDetailsRouteName = "GetAccountDetails";
-
-    private readonly IAccountsClient accountsClient = accountsClient;
 
     private readonly IAccountBalanceClient accountBalanceClient = accountBalanceClient;
 
@@ -57,24 +53,26 @@ public class MyAccountsController(
                 d.Balance,
                 0,
                 d.Currency,
-                true)).ToArray()),
+                d.IsActive)).ToArray()),
             e => Results.BadRequest(e.Message),
             e => Results.InternalServerError(e.Message));
     }
 
     [HttpGet("{accountId}", Name = GetAccountDetailsRouteName)]
-    public async Task<IActionResult> GetAccount(Guid accountId, CancellationToken cancellationToken)
+    public async Task<IResult> GetAccount(Guid accountId, CancellationToken cancellationToken)
     {
-        var data = await this.accountsClient.GetAccountDetailsAsync(accountId, cancellationToken);
-        var result = new AccountData(
-            data.AccountId.ToString(),
-            data.Name,
-            new(1, data.AccountType),
-            data.Balance,
-            data.CurrentPeriodChange,
-            data.Currency,
-            data.IsActive);
-        return this.Ok(result);
+        var data = await this.client.GetUserAccount(new(accountId), cancellationToken);
+        return data.Response.Match(
+            r => Results.Ok(new AccountData(
+                r.Details.Id.ToString(),
+                r.Details.Name,
+                new(r.Details.AccountType.Id, r.Details.AccountType.Name),
+                r.Details.Balance,
+                0,
+                r.Details.Currency,
+                r.Details.IsActive)),
+            e => Results.BadRequest(e.Message),
+            e => Results.InternalServerError(e.Message));
     }
 
     [HttpGet("{accountId}/operationsSummary")]
@@ -132,7 +130,7 @@ public class MyAccountsController(
         var output = new AccountBalanceHistory(
             accountId,
             result.Currency,
-            result.Items.Select(i => new BalanceHistoryEntry(i.Date, i.Balance)).ToArray());
+            [.. result.Items.Select(i => new BalanceHistoryEntry(i.Date, i.Balance))]);
         return this.Ok(output);
 
     }
