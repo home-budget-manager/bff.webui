@@ -1,6 +1,6 @@
 ﻿namespace HomeBudgetManager.Bff.WebUI.WebApi.Controllers.Accounts;
 
-public sealed class AcccountType(
+public sealed class AccountType(
     int id,
     string name)
 {
