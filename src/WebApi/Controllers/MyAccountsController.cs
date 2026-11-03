@@ -53,7 +53,7 @@ public class MyAccountsController(
                 d.Balance,
                 0,
                 d.Currency,
-                true)).ToArray()),
+                d.IsActive)).ToArray()),
             e => Results.BadRequest(e.Message),
             e => Results.InternalServerError(e.Message));
     }

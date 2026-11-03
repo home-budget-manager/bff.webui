@@ -50,6 +50,6 @@ public class GetAccountsTests : TestBase
         okResult.ShouldNotBeNull();
         var accounts = okResult!.Value;
         accounts.ShouldNotBeNull();
-        accounts!.Length.ShouldBeGreaterThan(0);
+        accounts!.Select(account => account.IsActive).ToArray().ShouldBe(new[] { true, false, true });
     }
 }
