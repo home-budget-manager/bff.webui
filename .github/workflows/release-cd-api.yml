@@ -1,4 +1,4 @@
-name: Main-CD-API
+name: Release-CD-API
 
 on:
   push:
