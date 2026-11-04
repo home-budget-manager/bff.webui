@@ -3,7 +3,7 @@ name: Main-CD-API
 on:
   push:
     branches:
-      - develop
+      - main
 
 concurrency:
   group: main-cd-api
